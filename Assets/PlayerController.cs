@@ -8,10 +8,12 @@ public class PlayerController : MonoBehaviour
     public GameObject boosterFlame;
 
     private Rigidbody2D rb;
+    private SpriteRenderer sr;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        sr = GetComponent<SpriteRenderer>();
     }
 
     void Update()
@@ -44,7 +46,19 @@ public class PlayerController : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Enemy"))
         {
-            Destroy(gameObject);
+            StartCoroutine(BlinkAndDisappear());
         }
+    }
+
+    private System.Collections.IEnumerator BlinkAndDisappear()
+    {
+        // Blink 6 times before disappearing
+        for (int i = 0; i < 6; i++)
+        {
+            sr.enabled = !sr.enabled;
+            yield return new WaitForSeconds(0.2f);
+        }
+
+        Destroy(gameObject);
     }
 }
