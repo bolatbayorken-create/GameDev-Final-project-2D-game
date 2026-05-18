@@ -12,6 +12,8 @@ public class Obstacle : MonoBehaviour
 
     public float maxSpinSpeed = 10f;
 
+    public GameObject bounceEffectPrefab;
+
 
     void Start()
     {
@@ -33,5 +35,12 @@ public class Obstacle : MonoBehaviour
     void Update()
     {
         
+    }
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        Vector2 contactPoint = collision.GetContact(0).point;
+        GameObject bounceEffect = Instantiate(bounceEffectPrefab, contactPoint, Quaternion.identity);
+        Destroy(bounceEffect, 1f);
     }
 }

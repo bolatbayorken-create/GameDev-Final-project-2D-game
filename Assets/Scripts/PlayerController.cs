@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
+using UnityEngine.SceneManagement;
 
 
 public class PlayerController : MonoBehaviour
@@ -9,6 +10,8 @@ public class PlayerController : MonoBehaviour
 
     private float score = 0f;
     public float scoreMultiplier = 10f;
+
+    private float highScore = 0f;
 
     public float thrustForce = 1f;
     public float maxSpeed = 5f;
@@ -19,15 +22,26 @@ public class PlayerController : MonoBehaviour
 
     public UIDocument uiDocument;
     private Label scoreText;
+    private Label highScoreText;
 
-    private bool isDead = false;
+    public GameObject explosionEffect;
+    private Button restartButton;
 
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         sr = GetComponent<SpriteRenderer>();
+
         scoreText = uiDocument.rootVisualElement.Q<Label>("ScoreLabel");
+        highScoreText = uiDocument.rootVisualElement.Q<Label>("HighScoreLabel");
+        restartButton = uiDocument.rootVisualElement.Q<Button>("RestartButton");
+
+        restartButton.style.display = DisplayStyle.None;
+        restartButton.clicked += ReloadScene;
+
+        highScore = PlayerPrefs.GetFloat("HighScore", 0f);
+        if (highScoreText != null) highScoreText.text = "Best: " + highScore;
     }
 
     void Update()
@@ -36,7 +50,12 @@ public class PlayerController : MonoBehaviour
         score = Mathf.FloorToInt(elapsedTime * scoreMultiplier);
         scoreText.text = "Score: " + score;
 
-
+        if (score > highScore)
+        {
+            highScore = score;
+            if (highScoreText != null) highScoreText.text = "Best: " + highScore;
+            PlayerPrefs.SetFloat("HighScore", highScore);
+        }
 
         if (Mouse.current.leftButton.isPressed)
         {
@@ -64,14 +83,17 @@ public class PlayerController : MonoBehaviour
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("Enemy") && !isDead)
+        if (collision.gameObject.CompareTag("Enemy"))
         {
-            isDead = true;
             rb.simulated = false;
-            StartCoroutine(BlinkAndDisappear());
+            // StartCoroutine(BlinkAndDisappear());
+            Instantiate(explosionEffect, transform.position, transform.rotation);
+            Destroy(gameObject);
+            restartButton.style.display = DisplayStyle.Flex;
         }
     }
-
+    
+    /*
     private System.Collections.IEnumerator BlinkAndDisappear()
     {
         boosterFlame.SetActive(false);
@@ -81,7 +103,14 @@ public class PlayerController : MonoBehaviour
             sr.enabled = !sr.enabled;
             yield return new WaitForSeconds(0.2f);
         }
-
+        Instantiate(explosionEffect, transform.position, transform.rotation);
         Destroy(gameObject);
+        restartButton.style.display = DisplayStyle.Flex;
+    }
+    */
+
+    void ReloadScene()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

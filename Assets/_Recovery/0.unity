@@ -208,7 +208,7 @@ GameObject:
   - component: {fileID: 542598177}
   m_Layer: 0
   m_Name: Border_Right
-  m_TagString: Enemy
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -381,7 +381,7 @@ GameObject:
   - component: {fileID: 706650415}
   m_Layer: 0
   m_Name: Border_Left
-  m_TagString: Enemy
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -516,11 +516,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2891359339729779106, guid: a851e12b9580b5349af7ca31ea2d3a3b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -7.09
+      value: 6.6340804
       objectReference: {fileID: 0}
     - target: {fileID: 2891359339729779106, guid: a851e12b9580b5349af7ca31ea2d3a3b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1.39
+      value: -3.4967818
       objectReference: {fileID: 0}
     - target: {fileID: 2891359339729779106, guid: a851e12b9580b5349af7ca31ea2d3a3b, type: 3}
       propertyPath: m_LocalPosition.z
@@ -577,7 +577,7 @@ GameObject:
   - component: {fileID: 793264798}
   m_Layer: 0
   m_Name: Border_Top
-  m_TagString: Enemy
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1724,7 +1724,6 @@ MonoBehaviour:
   maxSpeed: 5
   boosterFlame: {fileID: 1871795772}
   uiDocument: {fileID: 862210839}
-  explosionEffect: {fileID: 718483907773101103, guid: 7af41d00333a92644bbeea272852afa0, type: 3}
 --- !u!114 &1659640429
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2104,7 +2103,7 @@ GameObject:
   - component: {fileID: 1882257785}
   m_Layer: 0
   m_Name: Border_Bottom
-  m_TagString: Enemy
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
