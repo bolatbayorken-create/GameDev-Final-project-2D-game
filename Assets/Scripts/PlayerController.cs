@@ -27,6 +27,8 @@ public class PlayerController : MonoBehaviour
     public GameObject explosionEffect;
     private Button restartButton;
 
+    public GameObject borderParent;
+
 
     void Start()
     {
@@ -91,6 +93,7 @@ public class PlayerController : MonoBehaviour
             Destroy(gameObject);
             restartButton.style.display = DisplayStyle.Flex;
         }
+        borderParent.SetActive(false);
     }
     
     /*
