@@ -4,6 +4,7 @@ using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
 
 
+
 public class PlayerController : MonoBehaviour
 {
     private float elapsedTime = 0f;
@@ -28,6 +29,8 @@ public class PlayerController : MonoBehaviour
     private Button restartButton;
 
     public GameObject borderParent;
+    public InputAction moveForward;
+    public InputAction lookPosition;
 
 
     void Start()
