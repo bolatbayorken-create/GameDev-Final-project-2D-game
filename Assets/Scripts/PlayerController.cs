@@ -1,17 +1,14 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
-
-
+using UnityEngine.UI;               
+using UnityEngine.UIElements;       
 
 public class PlayerController : MonoBehaviour
 {
     private float elapsedTime = 0f;
-
     private float score = 0f;
     public float scoreMultiplier = 10f;
-
     private float highScore = 0f;
 
     public float thrustForce = 1f;
@@ -24,14 +21,17 @@ public class PlayerController : MonoBehaviour
     public UIDocument uiDocument;
     private Label scoreText;
     private Label highScoreText;
+    private UnityEngine.UIElements.Button restartButton; 
 
     public GameObject explosionEffect;
-    private Button restartButton;
-
     public GameObject borderParent;
+
     public InputAction moveForward;
     public InputAction lookPosition;
 
+    public UnityEngine.UI.Image gameOverImage; // эм
+
+    private bool isDead = false;
 
     void Start()
     {
@@ -40,13 +40,21 @@ public class PlayerController : MonoBehaviour
 
         scoreText = uiDocument.rootVisualElement.Q<Label>("ScoreLabel");
         highScoreText = uiDocument.rootVisualElement.Q<Label>("HighScoreLabel");
-        restartButton = uiDocument.rootVisualElement.Q<Button>("RestartButton");
+        restartButton = uiDocument.rootVisualElement.Q<UnityEngine.UIElements.Button>("RestartButton");
 
         restartButton.style.display = DisplayStyle.None;
         restartButton.clicked += ReloadScene;
 
         highScore = PlayerPrefs.GetFloat("HighScore", 0f);
         if (highScoreText != null) highScoreText.text = "Best: " + highScore;
+
+        moveForward.Enable();
+        lookPosition.Enable();
+
+        if (gameOverImage != null)
+        {
+            gameOverImage.gameObject.SetActive(false);
+        }
     }
 
     void Update()
@@ -62,9 +70,9 @@ public class PlayerController : MonoBehaviour
             PlayerPrefs.SetFloat("HighScore", highScore);
         }
 
-        if (Mouse.current.leftButton.isPressed)
+        if (moveForward.IsPressed())
         {
-            Vector3 mousePos = Camera.main.ScreenToWorldPoint(Mouse.current.position.value);
+            Vector3 mousePos = Camera.main.ScreenToWorldPoint(lookPosition.ReadValue<Vector2>());
             Vector2 direction = (mousePos - transform.position).normalized;
 
             transform.up = direction;
@@ -88,32 +96,17 @@ public class PlayerController : MonoBehaviour
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("Enemy"))
+        if (collision.gameObject.CompareTag("Enemy") && !isDead)
         {
+            isDead = true;
             rb.simulated = false;
-            // StartCoroutine(BlinkAndDisappear());
             Instantiate(explosionEffect, transform.position, transform.rotation);
             Destroy(gameObject);
             restartButton.style.display = DisplayStyle.Flex;
+            if (borderParent != null) borderParent.SetActive(false);
+            if (gameOverImage != null) gameOverImage.gameObject.SetActive(true);
         }
-        borderParent.SetActive(false);
     }
-    
-    /*
-    private System.Collections.IEnumerator BlinkAndDisappear()
-    {
-        boosterFlame.SetActive(false);
-        // Blink 6 times before disappearing // я хз почему не работает я пытался пофиксить
-        for (int i = 0; i < 6; i++)
-        {
-            sr.enabled = !sr.enabled;
-            yield return new WaitForSeconds(0.2f);
-        }
-        Instantiate(explosionEffect, transform.position, transform.rotation);
-        Destroy(gameObject);
-        restartButton.style.display = DisplayStyle.Flex;
-    }
-    */
 
     void ReloadScene()
     {
