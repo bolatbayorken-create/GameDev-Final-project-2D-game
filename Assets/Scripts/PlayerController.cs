@@ -1,8 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;               
-using UnityEngine.UIElements;       
+using UnityEngine.UIElements;
 
 public class PlayerController : MonoBehaviour
 {
@@ -21,7 +20,7 @@ public class PlayerController : MonoBehaviour
     public UIDocument uiDocument;
     private Label scoreText;
     private Label highScoreText;
-    private UnityEngine.UIElements.Button restartButton; 
+    private Button restartButton;
 
     public GameObject explosionEffect;
     public GameObject borderParent;
@@ -31,7 +30,20 @@ public class PlayerController : MonoBehaviour
 
     public UnityEngine.UI.Image gameOverImage; // эм
 
-    private bool isDead = false;
+    private VisualElement pauseMenu;
+    private Button resumeButton;
+    private bool isPaused = false;
+
+    private Button mainMenuButton;
+
+    public int maxLives = 3;
+    private int currentLives;
+
+    public float invulnerabilityTime = 1.5f;
+    private float invulnTimer = 0f;
+    private bool isInvulnerable = false;
+
+    private Label healthText;
 
     void Start()
     {
@@ -40,9 +52,12 @@ public class PlayerController : MonoBehaviour
 
         scoreText = uiDocument.rootVisualElement.Q<Label>("ScoreLabel");
         highScoreText = uiDocument.rootVisualElement.Q<Label>("HighScoreLabel");
-        restartButton = uiDocument.rootVisualElement.Q<UnityEngine.UIElements.Button>("RestartButton");
+        restartButton = uiDocument.rootVisualElement.Q<Button>("RestartButton");
+        pauseMenu = uiDocument.rootVisualElement.Q<VisualElement>("pauseMenu");
+        resumeButton = uiDocument.rootVisualElement.Q<Button>("ResumeButton");
+        mainMenuButton = uiDocument.rootVisualElement.Q<Button>("mainMenuButton");
 
-        restartButton.style.display = DisplayStyle.None;
+        pauseMenu.style.display = DisplayStyle.None;
         restartButton.clicked += ReloadScene;
 
         highScore = PlayerPrefs.GetFloat("HighScore", 0f);
@@ -51,9 +66,27 @@ public class PlayerController : MonoBehaviour
         moveForward.Enable();
         lookPosition.Enable();
 
+        currentLives = maxLives;
+        healthText = uiDocument.rootVisualElement.Q<Label>("HealthLabel");
+        if (healthText != null) healthText.text = "Lives: " + currentLives;
+
         if (gameOverImage != null)
         {
             gameOverImage.gameObject.SetActive(false);
+        }
+
+        if (resumeButton != null)
+        {
+            resumeButton.clicked += TogglePause;
+        }
+
+        if (mainMenuButton != null)
+        {
+            mainMenuButton.clicked += () => {
+                Debug.Log("pressed");
+                Time.timeScale = 1f;
+                SceneManager.LoadScene("MainMenu");
+            };
         }
     }
 
@@ -92,24 +125,80 @@ public class PlayerController : MonoBehaviour
         {
             boosterFlame.SetActive(false);
         }
+
+        if (Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            TogglePause();
+        }
+        if (isInvulnerable)
+        {
+            invulnTimer -= Time.deltaTime;
+
+
+            sr.enabled = (Mathf.FloorToInt(invulnTimer * 10f) % 2 == 0);
+
+            if (invulnTimer <= 0f)
+            {
+                isInvulnerable = false;
+                sr.enabled = true;
+            }
+        }
     }
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("Enemy") && !isDead)
+        if (collision.gameObject.CompareTag("Enemy") && !isInvulnerable)
         {
-            isDead = true;
-            rb.simulated = false;
-            Instantiate(explosionEffect, transform.position, transform.rotation);
-            Destroy(gameObject);
-            restartButton.style.display = DisplayStyle.Flex;
-            if (borderParent != null) borderParent.SetActive(false);
-            if (gameOverImage != null) gameOverImage.gameObject.SetActive(true);
+            currentLives--;
+            if (healthText != null) healthText.text = "Lives: " + currentLives;
+
+            if (currentLives <= 0)
+            {
+                rb.simulated = false;
+                var col = GetComponent<Collider2D>();
+                if (col != null) col.enabled = false;
+                Instantiate(explosionEffect, transform.position, transform.rotation);
+                Destroy(gameObject);
+                if (boosterFlame != null) boosterFlame.SetActive(false); // Выключаем пламя двигателя
+                if (pauseMenu != null)
+                {
+                    pauseMenu.style.display = DisplayStyle.Flex;
+                }
+                if (resumeButton != null)
+                {
+                    resumeButton.style.display = DisplayStyle.None;
+                }
+                if (borderParent != null) borderParent.SetActive(false);
+                if (gameOverImage != null) gameOverImage.gameObject.SetActive(true);
+            }
+            else
+            {
+                isInvulnerable = true;
+                invulnTimer = invulnerabilityTime;
+            }
         }
     }
 
     void ReloadScene()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        Time.timeScale = 1f;
+    }
+
+    void TogglePause()
+    {
+        isPaused = !isPaused;
+
+        if (isPaused)
+        {
+            Time.timeScale = 0f;
+            if (pauseMenu != null) pauseMenu.style.display = DisplayStyle.Flex;
+        }
+        else
+        {
+            Time.timeScale = 1f;
+            if (pauseMenu != null) pauseMenu.style.display = DisplayStyle.None;
+
+        }
     }
 }
